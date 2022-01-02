@@ -168,7 +168,7 @@ exports.logIn = async function(req, res, next) {
     }
 
     // Hash password
-    const checkUser = await User.getUser({email: email});
+    const checkUser = await User.User.findOne({email}).select('+password');
     if (checkUser) {
       if (passwordHash.verify(password, checkUser.password)) {
         // Generate auth token
