@@ -1,12 +1,8 @@
-const {v4: uuidv4} = require('uuid');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 // create schema for User
 const UserSchema = new Schema({
-  _id: {type: String,
-    default: uuidv4,
-  },
   email: {
     type: String,
     required: [true, 'An email is required'],
@@ -16,16 +12,20 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: [true, 'A valid password is required'],
+    select: false,
+  },
+  image: {
+    type: String,
   },
 }, {timestamps: true});
 
 // create model for User
-const User = mongoose.model('user', UserSchema);
+exports.User = mongoose.model('user', UserSchema);
 
 exports.getUsers = async (query, page, limit = 20) => {
   try {
     const skip = (page - 1) * limit;
-    return await User.find(query)
+    return await exports.User.find(query)
         .skip(skip)
         .limit(parseInt(limit))
         .sort('-createdAt');
@@ -37,7 +37,8 @@ exports.getUsers = async (query, page, limit = 20) => {
 
 exports.getUser = async (query) => {
   try {
-    return await User.findOne(query);
+    return await exports.User.findOne(query);
+    // .select('+password')
   } catch (err) {
     console.log(err);
     throw Error('Error while retrieving User');
@@ -46,7 +47,7 @@ exports.getUser = async (query) => {
 
 exports.create = async (body, session) => {
   try {
-    return await User.create([body], {session: session});
+    return await exports.User.create([body], {session: session});
   } catch (err) {
     console.log(err);
     throw Error('Error while creating User');

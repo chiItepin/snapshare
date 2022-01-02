@@ -25,6 +25,32 @@ exports.getUsers = async function(req, res, next) {
   }
 };
 
+exports.getUser = async function(req, res) {
+  try {
+    const userId = req?.params?.id;
+
+    const user = await User.getUser({_id: userId});
+
+    if (!user) {
+      return res.status(404).json({
+        status: 404,
+        message: 'User not found',
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      data: user,
+      message: 'User',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 400,
+      message: err?.message || '',
+    });
+  }
+};
+
 exports.create = async function(req, res, next) {
   const page = req.query.page ? req.query.page : 1;
   const limit = req.query.limit ? req.query.limit : 10;
@@ -85,6 +111,45 @@ exports.create = async function(req, res, next) {
   }
 };
 
+exports.updateUserImage = async function(req, res) {
+  try {
+    const {image} = req.body;
+    const userId = req?.params?.id;
+
+    if (!image || !userId) {
+      return res.status(400).json({
+        status: 400, message: 'Image must be entered'});
+    }
+
+    const user = await User.getUser({_id: userId});
+
+    if (!user) {
+      return res.status(404).json({
+        status: 404,
+        message: 'User not found',
+      });
+    }
+
+    user.image = image;
+    const updatedUser = await User.User
+        .findOneAndUpdate(
+            {_id: userId},
+            user);
+
+    return res.status(200).json({
+      status: 200,
+      data: updatedUser,
+      message: 'User',
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      status: 400,
+      message: err?.message || 'Unknown error',
+    });
+  }
+};
+
 exports.logIn = async function(req, res, next) {
   try {
     const {email, password} = req.body;
@@ -115,6 +180,7 @@ exports.logIn = async function(req, res, next) {
         return res.status(200).json({
           status: 200,
           data: authToken,
+          userId: checkUser._id,
           message: 'Account authenticated',
         });
       } else {

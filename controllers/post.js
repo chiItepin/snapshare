@@ -26,6 +26,7 @@ exports.createComment = async function(req, res, next) {
   session.startTransaction();
   try {
     const comment = {...req.body, authorId: res.userId};
+    comment.content = comment.content.replace(/(\r\n|\n|\r)/gm, '');
     const postId = req?.params?.id;
     const {content} = comment;
     if (!content || !postId) {
@@ -70,7 +71,7 @@ exports.createPost = async function(req, res) {
   session.startTransaction();
   try {
     const post = {...req.body, authorId: res.userId};
-
+    post.content = post.content.replace(/(\r\n|\n|\r)/gm, '');
     const {content} = post;
     if (!content) {
       return res.status(400).json({

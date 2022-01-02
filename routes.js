@@ -7,6 +7,8 @@ const postController = require('./controllers/post');
 
 // Users
 router.get('/users', authMiddleware, userController.getUsers);
+router.get('/users/:id', authMiddleware, userController.getUser);
+router.patch('/users/:id', authMiddleware, userController.updateUserImage);
 router.post('/users/login', userController.logIn);
 router.post('/users/create', userController.create);
 

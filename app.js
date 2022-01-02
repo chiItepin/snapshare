@@ -9,7 +9,6 @@ require('dotenv').config();
 mongoose.connect(`mongodb+srv://superadmin:${process.env.MONGO_PASSWORD}@cluster0.7jmty.mongodb.net/Cluster0?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
-      useFindAndModify: false,
       useUnifiedTopology: true,
     },
 )

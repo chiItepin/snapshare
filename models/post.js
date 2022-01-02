@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
 
 const PostImagesSchema = new Schema({
@@ -14,15 +15,14 @@ const PostCommentSchema = new Schema({
     required: [true, 'Content is required'],
   },
   authorId: {
-    type: String,
+    type: Schema.Types.ObjectId,
     required: [true, 'Author Id is required'],
   },
 }, {timestamps: true});
 
 const PostLikesSchema = new Schema({
   authorId: {
-    type: String,
-    unique: true,
+    type: Schema.Types.ObjectId,
     required: [true, 'Author Id is required'],
   },
 }, {timestamps: true});
@@ -30,7 +30,8 @@ const PostLikesSchema = new Schema({
 // create schema for Post
 const PostSchema = new Schema({
   authorId: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'user',
     required: [true, 'Author Id is required'],
   },
   content: {
@@ -50,16 +51,26 @@ const PostSchema = new Schema({
   },
 }, {timestamps: true});
 
+PostSchema.plugin(mongoosePaginate);
+
 // create model for Post
 exports.Post = mongoose.model('post', PostSchema);
 
-exports.getPosts = async (query, page, limit = 20) => {
+/**
+ * getPosts - returns a list of posts
+ * @param {{}} query
+ * @param {number} page
+ * @param {number} limit
+ * @return {{}}
+ */
+exports.getPosts = async (query, page = 1, limit = 10) => {
   try {
-    const skip = (page - 1) * limit;
-    return await exports.Post.find(query)
-        .skip(skip)
-        .limit(parseInt(limit))
-        .sort('-createdAt');
+    return await exports.Post.paginate(query, {
+      sort: '-createdAt',
+      page,
+      limit,
+      populate: [{path: 'authorId', select: '-password'}],
+    });
   } catch (err) {
     console.log(err);
     throw Error('Error while retrieving Posts');
@@ -68,7 +79,7 @@ exports.getPosts = async (query, page, limit = 20) => {
 
 exports.getPost = async (query) => {
   try {
-    return await exports.Post.findOne(query);
+    return await exports.Post.findOne(query).populate('authorId', '-password');
   } catch (err) {
     console.log(err);
     throw Error('Error while retrieving Post');
@@ -77,7 +88,10 @@ exports.getPost = async (query) => {
 
 exports.create = async (body, session = null) => {
   try {
-    return await exports.Post.create([body], {session: session});
+    const createdPost = await exports.Post.create([body], {session: session});
+    const postId = createdPost[0].id;
+    return await exports.Post.findOne({_id: postId}, null, {session: session})
+        .populate('authorId', '-password');
   } catch (err) {
     console.log(err);
     throw Error('Error while creating Post');
