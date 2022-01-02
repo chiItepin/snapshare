@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
 
 // create schema for User
@@ -16,19 +17,22 @@ const UserSchema = new Schema({
   },
   image: {
     type: String,
+    default: '',
   },
 }, {timestamps: true});
+
+UserSchema.plugin(mongoosePaginate);
 
 // create model for User
 exports.User = mongoose.model('user', UserSchema);
 
-exports.getUsers = async (query, page, limit = 20) => {
+exports.getUsers = async (query, page = 1, limit = 10) => {
   try {
-    const skip = (page - 1) * limit;
-    return await exports.User.find(query)
-        .skip(skip)
-        .limit(parseInt(limit))
-        .sort('-createdAt');
+    return await exports.User.paginate(query, {
+      sort: '-createdAt',
+      page,
+      limit,
+    });
   } catch (err) {
     console.log(err);
     throw Error('Error while retrieving Users');

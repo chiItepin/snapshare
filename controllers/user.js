@@ -83,11 +83,11 @@ exports.create = async function(req, res, next) {
     const hashedPassword = passwordHash.generate(password);
     req.body.password = hashedPassword;
 
-    const createdUser = await User.create(req.body, session);
+    const [createdUser] = await User.create(req.body, session);
 
     // Generate auth token
     const authToken = jwt.sign({
-      email: email,
+      email: createdUser.email,
       id: createdUser.id,
     }, process.env.TOKEN_SECRET, {expiresIn: '7d'});
 

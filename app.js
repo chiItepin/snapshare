@@ -1,10 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
 const routes = require('./routes');
 
 require('dotenv').config();
+
+app.use(bodyParser.json({limit: '50mb'}));
 
 mongoose.connect(`mongodb+srv://superadmin:${process.env.MONGO_PASSWORD}@cluster0.7jmty.mongodb.net/Cluster0?retryWrites=true&w=majority`,
     {
