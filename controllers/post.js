@@ -21,6 +21,25 @@ exports.getPosts = async function(req, res) {
   }
 };
 
+exports.getSinglePost = async function(req, res) {
+  try {
+    const postId = req?.params?.id;
+
+    const post = await Post.getPost({_id: postId});
+
+    return res.status(200).json({
+      status: 200,
+      data: post,
+      message: 'Post retrieved',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 400,
+      message: err?.message || '',
+    });
+  }
+};
+
 exports.createComment = async function(req, res, next) {
   const session = await mongoose.startSession();
   session.startTransaction();

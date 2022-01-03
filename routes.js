@@ -14,6 +14,7 @@ router.post('/users/create', userController.create);
 
 // Posts
 router.get('/posts', authMiddleware, postController.getPosts);
+router.get('/posts/:id', authMiddleware, postController.getSinglePost);
 router.post('/posts', authMiddleware, postController.createPost);
 router.put('/posts/:id', authMiddleware, postController.updatePost);
 router.patch('/posts/:id/like', authMiddleware, postController.updatePostLike);
