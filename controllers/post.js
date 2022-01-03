@@ -100,6 +100,52 @@ exports.createPost = async function(req, res) {
   }
 };
 
+exports.updatePostLike = async function(req, res) {
+  try {
+    const userId = res.userId;
+    const postId = req.params.id;
+
+    const post = await Post.getPost({_id: postId});
+    if (!post) {
+      return res.status(404).json({
+        status: 404,
+        message: err?.message || 'Post not found',
+      });
+    }
+
+    const userLikes = post.likes.filter((like) => like.id === userId);
+    console.log(userLikes);
+    if (userLikes.length) {
+      // user already liked the post, needs to be removed
+      post.likes = post.likes.filter((like) => like.id !== userId);
+    } else {
+      // push new like
+      console.log(userId);
+      const newLike = new Post.PostLike({
+        _id: userId,
+      });
+      post.likes = post.likes.push(newLike);
+    }
+
+    await Post.Post
+        .findOneAndUpdate(
+            {_id: postId},
+            post);
+
+    return res.status(200).json({
+      status: 200,
+      data: post,
+      message: 'Post updated',
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      status: 400,
+      message: err?.message || 'Unknown error',
+    });
+  }
+};
+
 exports.updatePost = async function(req, res) {
   const session = await mongoose.startSession();
   session.startTransaction();

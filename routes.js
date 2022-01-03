@@ -16,6 +16,7 @@ router.post('/users/create', userController.create);
 router.get('/posts', authMiddleware, postController.getPosts);
 router.post('/posts', authMiddleware, postController.createPost);
 router.put('/posts/:id', authMiddleware, postController.updatePost);
+router.patch('/posts/:id/like', authMiddleware, postController.updatePostLike);
 router.delete('/posts/:id', authMiddleware, postController.deletePost);
 
 // Comments

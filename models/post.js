@@ -55,6 +55,7 @@ PostSchema.plugin(mongoosePaginate);
 
 // create model for Post
 exports.Post = mongoose.model('post', PostSchema);
+exports.PostLike = mongoose.model('postLike', PostLikesSchema);
 
 /**
  * getPosts - returns a list of posts
