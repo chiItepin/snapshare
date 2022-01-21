@@ -6,11 +6,11 @@ exports.getPosts = async function(req, res) {
   const limit = req?.query?.limit || 20;
 
   try {
-    const users = await Post.getPosts({}, page, limit);
+    const posts = await Post.getPosts({}, page, limit);
 
     return res.status(200).json({
       status: 200,
-      data: users,
+      data: posts,
       message: 'List of posts',
     });
   } catch (err) {

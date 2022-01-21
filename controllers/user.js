@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Post = require('../models/post');
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -42,6 +43,34 @@ exports.getUser = async function(req, res) {
       status: 200,
       data: user,
       message: 'User',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 400,
+      message: err?.message || '',
+    });
+  }
+};
+
+exports.getUserPosts = async function(req, res) {
+  try {
+    const userId = req?.params?.id || '';
+    const page = req?.query?.page || 1;
+    const limit = req?.query?.limit || 20;
+
+    const posts = await Post.getPosts({authorId: userId}, page, limit);
+
+    if (!posts) {
+      return res.status(404).json({
+        status: 404,
+        message: 'Posts not found',
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      data: posts,
+      message: 'List of user posts',
     });
   } catch (err) {
     return res.status(400).json({
