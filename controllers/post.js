@@ -63,14 +63,16 @@ exports.createComment = async function(req, res, next) {
       });
     }
 
-    post.comments.push(comment);
+    post.comments.unshift(comment);
     await post.save({session});
 
     await session.commitTransaction();
 
+    const newPost = await Post.getPost({_id: postId});
+
     return res.status(201).json({
       status: 201,
-      data: post,
+      data: newPost,
       message: 'Comment created',
     });
   } catch (err) {
