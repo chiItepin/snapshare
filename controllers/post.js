@@ -133,13 +133,11 @@ exports.updatePostLike = async function(req, res) {
     }
 
     const userLikes = post.likes.filter((like) => like.id === userId);
-    console.log(userLikes);
     if (userLikes.length) {
       // user already liked the post, needs to be removed
       post.likes = post.likes.filter((like) => like.id !== userId);
     } else {
       // push new like
-      console.log(userId);
       const newLike = new Post.PostLike({
         _id: userId,
       });

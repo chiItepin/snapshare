@@ -16,6 +16,7 @@ const PostCommentSchema = new Schema({
   },
   authorId: {
     type: Schema.Types.ObjectId,
+    ref: 'user',
     required: [true, 'Author Id is required'],
   },
 }, {timestamps: true});
@@ -70,7 +71,7 @@ exports.getPosts = async (query, page = 1, limit = 10) => {
       sort: '-createdAt',
       page,
       limit,
-      populate: [{path: 'authorId', select: '-password'}],
+      populate: [{path: 'authorId'}],
     });
   } catch (err) {
     console.log(err);
@@ -80,7 +81,9 @@ exports.getPosts = async (query, page = 1, limit = 10) => {
 
 exports.getPost = async (query) => {
   try {
-    return await exports.Post.findOne(query).populate('authorId', '-password');
+    return await exports.Post.findOne(query)
+        .populate('authorId')
+        .populate('comments.authorId', ['-image']);
   } catch (err) {
     console.log(err);
     throw Error('Error while retrieving Post');
