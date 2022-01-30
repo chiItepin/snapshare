@@ -1,13 +1,10 @@
 // eslint-disable-next-line new-cap
 import {Router} from 'express';
-const authMiddleware = require('./middleware/auth');
-const userController = require('./controllers/user');
-const postController = require('./controllers/post');
+const authMiddleware = require('./app/middleware/auth');
+const userController = require('./app/controllers/user');
+const postController = require('./app/controllers/post');
 
-interface IProps {
-    lol: string;
-}
-
+// eslint-disable-next-line new-cap
 const router = Router();
 
 // Users
