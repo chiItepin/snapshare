@@ -1,15 +1,16 @@
-const mongoose = require('mongoose');
+import {Schema, model} from 'mongoose';
+import {Request} from 'express';
+import {IPost, IComment, IImages, ILike} from './types/post';
 const mongoosePaginate = require('mongoose-paginate-v2');
-const Schema = mongoose.Schema;
 
-const PostImagesSchema = new Schema({
+const PostImagesSchema = new Schema<IImages>({
   url: {
     type: String,
     required: [true, 'An url is required'],
   },
 }, {timestamps: true});
 
-const PostCommentSchema = new Schema({
+const PostCommentSchema = new Schema<IComment>({
   content: {
     type: String,
     required: [true, 'Content is required'],
@@ -21,7 +22,7 @@ const PostCommentSchema = new Schema({
   },
 }, {timestamps: true});
 
-const PostLikesSchema = new Schema({
+const PostLikesSchema = new Schema<ILike>({
   authorId: {
     type: Schema.Types.ObjectId,
     required: [true, 'Author Id is required'],
@@ -29,7 +30,7 @@ const PostLikesSchema = new Schema({
 }, {timestamps: true});
 
 // create schema for Post
-const PostSchema = new Schema({
+const PostSchema = new Schema<IPost>({
   authorId: {
     type: Schema.Types.ObjectId,
     ref: 'user',
@@ -43,11 +44,11 @@ const PostSchema = new Schema({
   comments: [PostCommentSchema],
   likes: [PostLikesSchema],
   tags: {
-    type: Array,
+    type: [String],
     default: [],
   },
   categories: {
-    type: Array,
+    type: [String],
     default: [],
   },
 }, {timestamps: true});
@@ -55,8 +56,8 @@ const PostSchema = new Schema({
 PostSchema.plugin(mongoosePaginate);
 
 // create model for Post
-exports.Post = mongoose.model('post', PostSchema);
-exports.PostLike = mongoose.model('postLike', PostLikesSchema);
+exports.Post = model<IPost>('post', PostSchema);
+exports.PostLike = model<ILike>('postLike', PostLikesSchema);
 
 /**
  * getPosts - returns a list of posts
@@ -65,7 +66,7 @@ exports.PostLike = mongoose.model('postLike', PostLikesSchema);
  * @param {number} limit
  * @return {{}}
  */
-exports.getPosts = async (query, page = 1, limit = 10) => {
+exports.getPosts = async (query: Request, page = 1, limit = 10) => {
   try {
     return await exports.Post.paginate(query, {
       sort: '-createdAt',
@@ -79,7 +80,7 @@ exports.getPosts = async (query, page = 1, limit = 10) => {
   }
 };
 
-exports.getPost = async (query) => {
+exports.getPost = async (query: Request) => {
   try {
     return await exports.Post.findOne(query)
         .populate('authorId')
@@ -90,7 +91,7 @@ exports.getPost = async (query) => {
   }
 };
 
-exports.create = async (body, session = null) => {
+exports.create = async (body: any, session = null) => {
   try {
     const createdPost = await exports.Post.create([body], {session: session});
     const postId = createdPost[0].id;

@@ -1,9 +1,14 @@
-const express = require('express');
 // eslint-disable-next-line new-cap
-const router = express.Router();
+import {Router} from 'express';
 const authMiddleware = require('./middleware/auth');
 const userController = require('./controllers/user');
 const postController = require('./controllers/post');
+
+interface IProps {
+    lol: string;
+}
+
+const router = Router();
 
 // Users
 router.get('/users', authMiddleware, userController.getUsers);

@@ -1,7 +1,9 @@
+import {Request} from 'express';
+import {startSession} from 'mongoose';
+import {IAuthResponse} from '../middleware/auth';
 const Post = require('../models/post');
-const mongoose = require('mongoose');
 
-exports.getPosts = async function(req, res) {
+exports.getPosts = async function(req: Request, res: IAuthResponse) {
   const page = req?.query?.page || 1;
   const limit = req?.query?.limit || 20;
 
@@ -21,7 +23,7 @@ exports.getPosts = async function(req, res) {
   }
 };
 
-exports.getSinglePost = async function(req, res) {
+exports.getSinglePost = async function(req: Request, res: IAuthResponse) {
   try {
     const postId = req?.params?.id;
 
@@ -40,8 +42,8 @@ exports.getSinglePost = async function(req, res) {
   }
 };
 
-exports.createComment = async function(req, res, next) {
-  const session = await mongoose.startSession();
+exports.createComment = async function(req: Request, res: IAuthResponse) {
+  const session = await startSession();
   session.startTransaction();
   try {
     const comment = {...req.body, authorId: res.userId};
@@ -87,8 +89,8 @@ exports.createComment = async function(req, res, next) {
   }
 };
 
-exports.createPost = async function(req, res) {
-  const session = await mongoose.startSession();
+exports.createPost = async function(req: Request, res: IAuthResponse) {
+  const session = await startSession();
   session.startTransaction();
   try {
     const post = {...req.body, authorId: res.userId};
@@ -121,7 +123,10 @@ exports.createPost = async function(req, res) {
   }
 };
 
-exports.updatePostLike = async function(req, res) {
+exports.updatePostLike = async function(
+    req: Request,
+    res: IAuthResponse,
+) {
   try {
     const userId = res.userId;
     const postId = req.params.id;
@@ -130,7 +135,7 @@ exports.updatePostLike = async function(req, res) {
     if (!post) {
       return res.status(404).json({
         status: 404,
-        message: err?.message || 'Post not found',
+        message: 'Post not found',
       });
     }
 
@@ -165,8 +170,8 @@ exports.updatePostLike = async function(req, res) {
   }
 };
 
-exports.updatePost = async function(req, res) {
-  const session = await mongoose.startSession();
+exports.updatePost = async function(req: Request, res: IAuthResponse) {
+  const session = await startSession();
   session.startTransaction();
   try {
     const post = {...req.body, authorId: res.userId};
@@ -205,8 +210,8 @@ exports.updatePost = async function(req, res) {
   }
 };
 
-exports.deletePost = async function(req, res) {
-  const session = await mongoose.startSession();
+exports.deletePost = async function(req: Request, res: IAuthResponse) {
+  const session = await startSession();
   session.startTransaction();
   try {
     const postId = req?.params?.id;

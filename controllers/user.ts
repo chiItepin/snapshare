@@ -1,3 +1,5 @@
+import {Request, Response} from 'express';
+import IUser from '../models/types/user';
 const User = require('../models/user');
 const Post = require('../models/post');
 const passwordHash = require('password-hash');
@@ -6,9 +8,9 @@ const mongoose = require('mongoose');
 
 require('dotenv').config();
 
-exports.getUsers = async function(req, res, next) {
-  const page = req?.query?.page || 1;
-  const limit = req?.query?.limit || 20;
+exports.getUsers = async function(req: Request, res: Response) {
+  const page = req.query?.body || 1;
+  const limit = req.query?.limit || 20;
 
   try {
     const users = await User.getUsers({}, page, limit);
@@ -26,7 +28,7 @@ exports.getUsers = async function(req, res, next) {
   }
 };
 
-exports.getUser = async function(req, res) {
+exports.getUser = async function(req: Request, res: Response) {
   try {
     const userId = req?.params?.id;
 
@@ -52,7 +54,7 @@ exports.getUser = async function(req, res) {
   }
 };
 
-exports.getUserPosts = async function(req, res) {
+exports.getUserPosts = async function(req: Request, res: Response) {
   try {
     const userId = req?.params?.id || '';
     const page = req?.query?.page || 1;
@@ -80,7 +82,7 @@ exports.getUserPosts = async function(req, res) {
   }
 };
 
-exports.create = async function(req, res, next) {
+exports.create = async function(req: Request, res: Response) {
   const page = req.query.page ? req.query.page : 1;
   const limit = req.query.limit ? req.query.limit : 10;
 
@@ -140,10 +142,10 @@ exports.create = async function(req, res, next) {
   }
 };
 
-exports.updateUserImage = async function(req, res) {
+exports.updateUserImage = async function(req: Request, res: Response) {
   try {
-    const {image} = req.body;
-    const userId = req?.params?.id;
+    const {image}: {image: string} = req.body;
+    const userId: string = req.params?.id;
 
     if (!image || !userId) {
       return res.status(400).json({
@@ -179,9 +181,9 @@ exports.updateUserImage = async function(req, res) {
   }
 };
 
-exports.logIn = async function(req, res, next) {
+exports.logIn = async function(req: Request, res: Response) {
   try {
-    const {email, password} = req.body;
+    const {email, password}: {email: string, password: string} = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -197,13 +199,15 @@ exports.logIn = async function(req, res, next) {
     }
 
     // Hash password
-    const checkUser = await User.User.findOne({email}).select('+password');
+    const checkUser: IUser = await User
+        .User.findOne({email}).select('+password');
+
     if (checkUser) {
       if (passwordHash.verify(password, checkUser.password)) {
         // Generate auth token
         const authToken = jwt.sign({
           email: checkUser.email,
-          id: checkUser.id,
+          id: checkUser._id,
         }, process.env.TOKEN_SECRET, {expiresIn: '7d'});
 
         return res.status(200).json({

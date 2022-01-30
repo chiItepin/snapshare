@@ -1,12 +1,13 @@
-const mongoose = require('mongoose');
+import {Schema, model} from 'mongoose';
+import IUser from './types/user';
 const mongoosePaginate = require('mongoose-paginate-v2');
-const Schema = mongoose.Schema;
 
 // create schema for User
-const UserSchema = new Schema({
+const UserSchema = new Schema<IUser>({
   email: {
     type: String,
     required: [true, 'An email is required'],
+    // @ts-ignore
     match: [/^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/, 'Invalid email format'],
     unique: true,
   },
@@ -24,7 +25,7 @@ const UserSchema = new Schema({
 UserSchema.plugin(mongoosePaginate);
 
 // create model for User
-exports.User = mongoose.model('user', UserSchema);
+exports.User = model<IUser>('user', UserSchema);
 
 exports.getUsers = async (query, page = 1, limit = 10) => {
   try {
