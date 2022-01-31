@@ -8,7 +8,6 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --project ./",
     "start": "ts-node app.ts",
     "dev": "nodemon app.ts"
   },
