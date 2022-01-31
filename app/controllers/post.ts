@@ -1,6 +1,7 @@
 import {Request} from 'express';
 import {startSession} from 'mongoose';
 import {IAuthResponse} from '../middleware/auth';
+import {IPost, IComment} from '../models/types/post';
 const Post = require('../models/post');
 
 exports.getPosts = async function(req: Request, res: IAuthResponse) {
@@ -46,7 +47,7 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
   const session = await startSession();
   session.startTransaction();
   try {
-    const comment = {...req.body, authorId: res.userId};
+    const comment: IComment = {...req.body, authorId: res.userId};
     comment.content = comment.content.replace(/(\r\n|\n|\r)/gm, '');
     const postId = req?.params?.id;
     const {content} = comment;
@@ -57,7 +58,7 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
       });
     }
 
-    const post = await Post.getPost({_id: postId});
+    const post: IPost = await Post.getPost({_id: postId});
     if (!post) {
       return res.status(404).json({
         status: 404,
@@ -70,7 +71,7 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
 
     await session.commitTransaction();
 
-    const newPost = await Post.getPost({_id: postId});
+    const newPost: IPost = await Post.getPost({_id: postId});
 
     return res.status(201).json({
       status: 201,
@@ -93,7 +94,7 @@ exports.createPost = async function(req: Request, res: IAuthResponse) {
   const session = await startSession();
   session.startTransaction();
   try {
-    const post = {...req.body, authorId: res.userId};
+    const post: IPost = {...req.body, authorId: res.userId};
     post.content = post.content.replace(/(\r\n|\n|\r)/gm, '');
     const {content} = post;
     if (!content) {

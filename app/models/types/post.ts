@@ -1,3 +1,4 @@
+import {Document} from 'mongoose';
 import IUser from './user';
 
 export interface IComment {
@@ -17,7 +18,7 @@ export interface IImages {
   url: string;
 }
 
-export interface IPost {
+export interface IPost extends Document {
   _id?: string;
   authorId: string | IUser;
   content: string;

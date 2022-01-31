@@ -1,6 +1,6 @@
 import {Schema, model} from 'mongoose';
 import IUser from './types/user';
-const mongoosePaginate = require('mongoose-paginate-v2');
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 // create schema for User
 const UserSchema = new Schema<IUser>({

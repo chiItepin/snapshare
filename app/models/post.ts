@@ -1,14 +1,14 @@
 import {Schema, model} from 'mongoose';
 import {Request} from 'express';
 import {IPost, IComment, IImages, ILike} from './types/post';
-const mongoosePaginate = require('mongoose-paginate-v2');
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const PostImagesSchema = new Schema<IImages>({
   url: {
     type: String,
     required: [true, 'An url is required'],
   },
-}, {timestamps: true});
+}, {timestamps: false});
 
 const PostCommentSchema = new Schema<IComment>({
   content: {
