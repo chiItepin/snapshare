@@ -1,4 +1,4 @@
-FROM node:14 as prod
+FROM node:14 as dev
 
 # Create app directory
 WORKDIR /app
@@ -9,10 +9,9 @@ COPY package*.json ./
 RUN npm install
 
 # Copying rest of the application to app directory
-COPY . .
+COPY . /app
 
-ENV NODE_ENV=production
+# Expose the port and start the application
+EXPOSE 8080
 
-RUN npm run build
-
-CMD npm run start-prod
+CMD ["npm", "run", "dev"]

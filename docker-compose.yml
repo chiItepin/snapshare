@@ -1,12 +1,17 @@
 version: "3"
 services:
-  web_dev:
+  web_prod:
       build:
          context: .
+         target: prod
       env_file: ./.env
-      command: npm run dev
+      environment:
+      - NODE_ENV=production
+      container_name: node-snapshare
+      restart: always
+      command: npm run start
       volumes: 
          - .:/app/
          - /app/node_modules
       ports:
-      - 8080:8080
+          - "80:5000"
