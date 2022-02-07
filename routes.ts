@@ -3,6 +3,7 @@ import {Router} from 'express';
 const authMiddleware = require('./app/middleware/auth');
 const userController = require('./app/controllers/user');
 const postController = require('./app/controllers/post');
+const followingController = require('./app/controllers/following');
 
 // eslint-disable-next-line new-cap
 const router = Router();
@@ -27,5 +28,9 @@ router.delete('/posts/:id', authMiddleware, postController.deletePost);
 router.post('/posts/:id/comments',
     authMiddleware,
     postController.createComment);
+
+// Followers
+router.post('/followers', authMiddleware, followingController.createFollower);
+router.get('/followers/:id', authMiddleware, followingController.listFollowers);
 
 module.exports = router;
