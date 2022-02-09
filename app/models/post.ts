@@ -13,6 +13,7 @@ const PostImagesSchema = new Schema<IImages>({
 const PostCommentSchema = new Schema<IComment>({
   content: {
     type: String,
+    trim: true,
     required: [true, 'Content is required'],
   },
   authorId: {
@@ -38,6 +39,7 @@ const PostSchema = new Schema<IPost>({
   },
   content: {
     type: String,
+    trim: true,
     required: [true, 'Content is required'],
   },
   images: [PostImagesSchema],

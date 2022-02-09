@@ -1,7 +1,7 @@
 import {Request} from 'express';
 import {startSession} from 'mongoose';
 import {IAuthResponse} from '../middleware/auth';
-import {IPost, IComment} from '../models/types/post';
+import {IPost, IComment, ILike} from '../models/types/post';
 const Post = require('../models/post');
 
 exports.getPosts = async function(req: Request, res: IAuthResponse) {
@@ -47,9 +47,10 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
   const session = await startSession();
   session.startTransaction();
   try {
+    const postId = req?.params?.id || '';
     const comment: IComment = {...req.body, authorId: res.userId};
     comment.content = comment.content.replace(/(\r\n|\n|\r)/gm, '');
-    const postId = req?.params?.id;
+
     const {content} = comment;
     if (!content || !postId) {
       return res.status(400).json({
@@ -132,7 +133,7 @@ exports.updatePostLike = async function(
     const userId = res.userId;
     const postId = req.params.id;
 
-    const post = await Post.getPost({_id: postId});
+    const post: IPost = await Post.getPost({_id: postId});
     if (!post) {
       return res.status(404).json({
         status: 404,
@@ -140,22 +141,21 @@ exports.updatePostLike = async function(
       });
     }
 
-    const userLikes = post.likes.filter((like) => like.id === userId);
+    const userLikes = post.likes
+        .filter((like) => like.authorId?.toString() === userId);
     if (userLikes.length) {
       // user already liked the post, needs to be removed
-      post.likes = post.likes.filter((like) => like.id !== userId);
+      post.likes = post.likes
+          .filter((like) => like.authorId?.toString() !== userId);
     } else {
       // push new like
-      const newLike = new Post.PostLike({
-        _id: userId,
-      });
-      post.likes = post.likes.push(newLike);
+      const newLike: ILike = {
+        authorId: userId,
+      };
+      post.likes.push(newLike);
     }
 
-    await Post.Post
-        .findOneAndUpdate(
-            {_id: postId},
-            post);
+    await post.save();
 
     return res.status(200).json({
       status: 200,
