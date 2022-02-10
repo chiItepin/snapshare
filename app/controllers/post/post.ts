@@ -1,8 +1,12 @@
 import {Request} from 'express';
 import {startSession} from 'mongoose';
-import {IAuthResponse} from '../middleware/auth';
-import {IPost, IComment, ILike} from '../models/types/post';
-const Post = require('../models/post');
+import {handleUserNotFound} from '../helpers';
+import {IAuthResponse} from '../../middleware/auth';
+import {IPost, IComment, ILike} from '../../models/types/post';
+import IUser from '../../models/types/user';
+import Notification from '../../models/notification';
+const Post = require('../../models/post');
+const User = require('../../models/user');
 
 exports.getPosts = async function(req: Request, res: IAuthResponse) {
   const page = req?.query?.page || 1;
@@ -48,7 +52,14 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
   session.startTransaction();
   try {
     const postId = req?.params?.id || '';
-    const comment: IComment = {...req.body, authorId: res.userId};
+    const commentAuthorId = res.userId;
+    const commentAuthorUser: IUser = await User.getUser({_id: commentAuthorId});
+
+    if (!commentAuthorUser) {
+      handleUserNotFound(res);
+    }
+
+    const comment: IComment = {...req.body, authorId: commentAuthorId};
     comment.content = comment.content.replace(/(\r\n|\n|\r)/gm, '');
 
     const {content} = comment;
@@ -67,6 +78,16 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
       });
     }
 
+    if (commentAuthorId !== post.authorId.id) {
+    // handle new notification to post owner
+      await Notification.create([{
+        userId: post.authorId.id,
+        type: 'post',
+        message: `${commentAuthorUser.email}: ${content}`,
+        resourceId: post._id,
+      }], {session});
+    }
+
     post.comments.unshift(comment);
     await post.save({session});
 
@@ -77,7 +98,7 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
     return res.status(201).json({
       status: 201,
       data: newPost,
-      message: 'Comment created',
+      message: 'Comment created successfully',
     });
   } catch (err) {
     await session.abortTransaction();
@@ -95,9 +116,11 @@ exports.createPost = async function(req: Request, res: IAuthResponse) {
   const session = await startSession();
   session.startTransaction();
   try {
-    const post: IPost = {...req.body, authorId: res.userId};
+    const post: IPost = {...req.body, authorId: {_id: res.userId}};
+
     post.content = post.content.replace(/(\r\n|\n|\r)/gm, '');
     const {content} = post;
+
     if (!content) {
       return res.status(400).json({
         status: 400,
@@ -175,9 +198,10 @@ exports.updatePost = async function(req: Request, res: IAuthResponse) {
   const session = await startSession();
   session.startTransaction();
   try {
-    const post = {...req.body, authorId: res.userId};
+    const post = {...req.body};
 
     const {content} = post;
+
     if (!content) {
       return res.status(400).json({
         status: 400,

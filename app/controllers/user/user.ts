@@ -1,7 +1,7 @@
 import {Request, Response} from 'express';
-import IUser from '../models/types/user';
-const User = require('../models/user');
-const Post = require('../models/post');
+import IUser from '../../models/types/user';
+const User = require('../../models/user');
+const Post = require('../../models/post');
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');

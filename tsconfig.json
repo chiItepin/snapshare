@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+      "strict": false,
       "module": "commonjs",
       "esModuleInterop": true,
       "target": "es2020",
@@ -7,6 +8,7 @@
       "sourceMap": true,
       "outDir": "dist",
       "baseUrl": ".",
+      "types": ["node"],
       "paths": {
           "*": [
               "node_modules/*"

@@ -20,7 +20,7 @@ export interface IImages {
 
 export interface IPost extends Document {
   _id?: string;
-  authorId: string | IUser;
+  authorId: IUser;
   content: string;
   images: IImages[];
   likes: ILike[];

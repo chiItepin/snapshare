@@ -1,9 +1,13 @@
 // eslint-disable-next-line new-cap
 import {Router} from 'express';
+import {
+  listNotifications,
+  updateNotificationsSeenStatus,
+} from './app/controllers/user/notification';
 const authMiddleware = require('./app/middleware/auth');
-const userController = require('./app/controllers/user');
-const postController = require('./app/controllers/post');
-const followingController = require('./app/controllers/following');
+const userController = require('./app/controllers/user/user');
+const postController = require('./app/controllers/post/post');
+const followingController = require('./app/controllers/user/following');
 
 // eslint-disable-next-line new-cap
 const router = Router();
@@ -32,5 +36,11 @@ router.post('/posts/:id/comments',
 // Followers
 router.post('/followers', authMiddleware, followingController.createFollower);
 router.get('/followers/:id', authMiddleware, followingController.listFollowers);
+
+// Notifications
+router.get('/notifications',
+    authMiddleware, listNotifications);
+router.patch('/notifications/status',
+    authMiddleware, updateNotificationsSeenStatus);
 
 module.exports = router;

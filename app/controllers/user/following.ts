@@ -1,9 +1,9 @@
 import {Request} from 'express';
 import {startSession} from 'mongoose';
-import {IAuthResponse} from '../middleware/auth';
-import IFollowing from '../models/types/following';
-const Following = require('../models/following');
-const User = require('../models/user');
+import {IAuthResponse} from '../../middleware/auth';
+import IFollowing from '../../models/types/following';
+const Following = require('../../models/following');
+const User = require('../../models/user');
 
 const handleUserNotFound = (res: IAuthResponse) => {
   return res.status(404).json({
@@ -24,11 +24,11 @@ exports.listFollowers = async function(req: Request, res: IAuthResponse) {
       handleUserNotFound(res);
     }
 
-    const posts = await Following.getFollowers({}, page, limit);
+    const followers = await Following.getFollowers({}, page, limit);
 
     return res.status(200).json({
       status: 200,
-      data: posts,
+      data: followers,
       message: 'List of followers',
     });
   } catch (err) {
