@@ -3,6 +3,7 @@ import {Router} from 'express';
 import {
   listNotifications,
   updateNotificationsSeenStatus,
+  listUnSeenNotifications,
 } from './app/controllers/user/notification';
 const authMiddleware = require('./app/middleware/auth');
 const userController = require('./app/controllers/user/user');
@@ -40,6 +41,8 @@ router.get('/followers/:id', authMiddleware, followingController.listFollowers);
 // Notifications
 router.get('/notifications',
     authMiddleware, listNotifications);
+router.get('/notifications/unseen',
+    authMiddleware, listUnSeenNotifications);
 router.patch('/notifications/status',
     authMiddleware, updateNotificationsSeenStatus);
 
