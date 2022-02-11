@@ -1,7 +1,7 @@
 {
   "name": "snapshare",
   "engines": {
-    "node": ">= 14.X"
+    "node": "14.x"
   },
   "version": "1.0.0",
   "description": "Snapshare API",
