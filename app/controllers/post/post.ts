@@ -5,15 +5,15 @@ import {IAuthResponse} from '../../middleware/auth';
 import {IPost, IComment, ILike} from '../../models/types/post';
 import IUser from '../../models/types/user';
 import Notification from '../../models/notification';
-const Post = require('../../models/post');
+import Post, {getPost, getPosts, create} from '../../models/post';
 const User = require('../../models/user');
 
-exports.getPosts = async function(req: Request, res: IAuthResponse) {
-  const page = req?.query?.page || 1;
-  const limit = req?.query?.limit || 20;
+export const handleListPosts = async (req: Request, res: IAuthResponse) => {
+  const page = req?.query?.page ? Number(req?.query?.page) : 1;
+  const limit = req?.query?.limit ? Number(req?.query?.limit) : 20;
 
   try {
-    const posts = await Post.getPosts({}, page, limit);
+    const posts = await getPosts({}, page, limit);
 
     return res.status(200).json({
       status: 200,
@@ -28,11 +28,35 @@ exports.getPosts = async function(req: Request, res: IAuthResponse) {
   }
 };
 
-exports.getSinglePost = async function(req: Request, res: IAuthResponse) {
+export const handleSearchListPosts = async (
+    req: Request, res: IAuthResponse) => {
+  const page = req?.query?.page ? Number(req?.query?.page) : 1;
+  const limit = req?.query?.limit ? Number(req?.query?.limit) : 20;
+  const searchQuery = req.params?.query || '';
+
+  try {
+    const posts = await getPosts({
+      content: {$regex: '.*' + searchQuery + '.*'},
+    }, page, limit);
+
+    return res.status(200).json({
+      status: 200,
+      data: posts,
+      message: 'Listing posts',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 400,
+      message: err?.message || '',
+    });
+  }
+};
+
+export const getSinglePost = async (req: Request, res: IAuthResponse) => {
   try {
     const postId = req?.params?.id;
 
-    const post = await Post.getPost({_id: postId});
+    const post = await getPost({_id: postId});
 
     return res.status(200).json({
       status: 200,
@@ -47,7 +71,7 @@ exports.getSinglePost = async function(req: Request, res: IAuthResponse) {
   }
 };
 
-exports.createComment = async function(req: Request, res: IAuthResponse) {
+export const createComment = async (req: Request, res: IAuthResponse) => {
   const session = await startSession();
   session.startTransaction();
   try {
@@ -70,7 +94,7 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
       });
     }
 
-    const post: IPost = await Post.getPost({_id: postId});
+    const post = await getPost({_id: postId});
     if (!post) {
       return res.status(404).json({
         status: 404,
@@ -93,7 +117,7 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
 
     await session.commitTransaction();
 
-    const newPost: IPost = await Post.getPost({_id: postId});
+    const newPost = await getPost({_id: postId});
 
     return res.status(201).json({
       status: 201,
@@ -112,7 +136,7 @@ exports.createComment = async function(req: Request, res: IAuthResponse) {
   }
 };
 
-exports.createPost = async function(req: Request, res: IAuthResponse) {
+export const createPost = async (req: Request, res: IAuthResponse) => {
   const session = await startSession();
   session.startTransaction();
   try {
@@ -128,7 +152,7 @@ exports.createPost = async function(req: Request, res: IAuthResponse) {
       });
     }
 
-    const createdPost = await Post.create(post, session);
+    const createdPost = await create(post, session);
     await session.commitTransaction();
 
     return res.status(201).json({
@@ -148,15 +172,15 @@ exports.createPost = async function(req: Request, res: IAuthResponse) {
   }
 };
 
-exports.updatePostLike = async function(
+export const updatePostLike = async (
     req: Request,
     res: IAuthResponse,
-) {
+) => {
   try {
     const userId = res.userId;
     const postId = req.params.id;
 
-    const post: IPost = await Post.getPost({_id: postId});
+    const post = await getPost({_id: postId});
     if (!post) {
       return res.status(404).json({
         status: 404,
@@ -194,7 +218,7 @@ exports.updatePostLike = async function(
   }
 };
 
-exports.updatePost = async function(req: Request, res: IAuthResponse) {
+export const updatePost = async (req: Request, res: IAuthResponse) => {
   const session = await startSession();
   session.startTransaction();
   try {
@@ -210,7 +234,7 @@ exports.updatePost = async function(req: Request, res: IAuthResponse) {
     }
 
     const postId = req.params.id;
-    const updatedPost = await Post.Post
+    const updatedPost = await Post
         .findOneAndUpdate(
             {_id: postId},
             req.body,
@@ -235,13 +259,13 @@ exports.updatePost = async function(req: Request, res: IAuthResponse) {
   }
 };
 
-exports.deletePost = async function(req: Request, res: IAuthResponse) {
+export const deletePost = async (req: Request, res: IAuthResponse) => {
   const session = await startSession();
   session.startTransaction();
   try {
     const postId = req?.params?.id;
 
-    await Post.Post
+    await Post
         .findOneAndDelete(
             {_id: postId},
             {session});

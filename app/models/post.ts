@@ -1,5 +1,4 @@
-import {Schema, model} from 'mongoose';
-import {Request} from 'express';
+import {Schema, model, PaginateModel} from 'mongoose';
 import {IPost, IComment, IImages, ILike} from './types/post';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
@@ -58,8 +57,9 @@ const PostSchema = new Schema<IPost>({
 PostSchema.plugin(mongoosePaginate);
 
 // create model for Post
-exports.Post = model<IPost>('post', PostSchema);
-exports.PostLike = model<ILike>('postLike', PostLikesSchema);
+const Post = model<IPost, PaginateModel<IPost>>('post', PostSchema);
+
+// const PostLike = model<ILike>('postLike', PostLikesSchema);
 
 /**
  * getPosts - returns a list of posts
@@ -68,9 +68,12 @@ exports.PostLike = model<ILike>('postLike', PostLikesSchema);
  * @param {number} limit
  * @return {{}}
  */
-exports.getPosts = async (query: Request, page = 1, limit = 10) => {
+export const getPosts = async (
+    query: any,
+    page: number = 1,
+    limit: number = 10) => {
   try {
-    return await exports.Post.paginate(query, {
+    return await Post.paginate(query, {
       sort: '-createdAt',
       page,
       limit,
@@ -82,9 +85,9 @@ exports.getPosts = async (query: Request, page = 1, limit = 10) => {
   }
 };
 
-exports.getPost = async (query: Request) => {
+export const getPost = async (query: any) => {
   try {
-    return await exports.Post.findOne(query)
+    return await Post.findOne(query)
         .populate('authorId')
         .populate('comments.authorId', ['-image']);
   } catch (err) {
@@ -93,14 +96,16 @@ exports.getPost = async (query: Request) => {
   }
 };
 
-exports.create = async (body: any, session = null) => {
+export const create = async (body: any, session = null) => {
   try {
-    const createdPost = await exports.Post.create([body], {session: session});
+    const createdPost = await Post.create([body], {session: session});
     const postId = createdPost[0].id;
-    return await exports.Post.findOne({_id: postId}, null, {session: session})
+    return await Post.findOne({_id: postId}, null, {session: session})
         .populate('authorId', '-password');
   } catch (err) {
     console.log(err);
     throw Error('Error while creating Post');
   }
 };
+
+export default Post;

@@ -5,9 +5,18 @@ import {
   updateNotificationsSeenStatus,
   listUnSeenNotifications,
 } from './app/controllers/user/notification';
+import {
+  handleListPosts,
+  getSinglePost,
+  createPost,
+  updatePost,
+  updatePostLike,
+  deletePost,
+  createComment,
+  handleSearchListPosts,
+} from './app/controllers/post/post';
 const authMiddleware = require('./app/middleware/auth');
 const userController = require('./app/controllers/user/user');
-const postController = require('./app/controllers/post/post');
 const followingController = require('./app/controllers/user/following');
 
 // eslint-disable-next-line new-cap
@@ -22,17 +31,18 @@ router.post('/users/login', userController.logIn);
 router.post('/users/create', userController.create);
 
 // Posts
-router.get('/posts', authMiddleware, postController.getPosts);
-router.get('/posts/:id', authMiddleware, postController.getSinglePost);
-router.post('/posts', authMiddleware, postController.createPost);
-router.put('/posts/:id', authMiddleware, postController.updatePost);
-router.patch('/posts/:id/like', authMiddleware, postController.updatePostLike);
-router.delete('/posts/:id', authMiddleware, postController.deletePost);
+router.get('/posts', authMiddleware, handleListPosts);
+router.get('/posts/:id', authMiddleware, getSinglePost);
+router.post('/posts', authMiddleware, createPost);
+router.put('/posts/:id', authMiddleware, updatePost);
+router.patch('/posts/:id/like', authMiddleware, updatePostLike);
+router.delete('/posts/:id', authMiddleware, deletePost);
+router.get('/posts/search/:query', authMiddleware, handleSearchListPosts);
 
 // Comments
 router.post('/posts/:id/comments',
     authMiddleware,
-    postController.createComment);
+    createComment);
 
 // Followers
 router.post('/followers', authMiddleware, followingController.createFollower);
