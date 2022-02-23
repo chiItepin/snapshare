@@ -6,6 +6,7 @@ import {IPost, IComment, ILike} from '../../models/types/post';
 import IUser from '../../models/types/user';
 import Notification from '../../models/notification';
 import Post, {getPost, getPosts, create} from '../../models/post';
+import Following from '../../models/following';
 const User = require('../../models/user');
 
 export const handleListPosts = async (req: Request, res: IAuthResponse) => {
@@ -57,6 +58,13 @@ export const getSinglePost = async (req: Request, res: IAuthResponse) => {
     const postId = req?.params?.id;
 
     const post = await getPost({_id: postId});
+
+    if (!post) {
+      return res.status(404).json({
+        status: 404,
+        message: 'Post not found',
+      });
+    }
 
     return res.status(200).json({
       status: 200,
@@ -140,7 +148,13 @@ export const createPost = async (req: Request, res: IAuthResponse) => {
   const session = await startSession();
   session.startTransaction();
   try {
-    const post: IPost = {...req.body, authorId: {_id: res.userId}};
+    const userId = res.userId;
+    const post: IPost = {...req.body, authorId: {_id: userId}};
+
+    const requestedUser = await User.getUser({_id: userId});
+    if (!requestedUser) {
+      handleUserNotFound(res);
+    }
 
     post.content = post.content.replace(/(\r\n|\n|\r)/gm, '');
     const {content} = post;
@@ -153,8 +167,23 @@ export const createPost = async (req: Request, res: IAuthResponse) => {
     }
 
     const createdPost = await create(post, session);
-    await session.commitTransaction();
 
+    const followers = await Following.find({
+      user: userId,
+    }).exec();
+
+    // handle new notification to post owner
+    const newNotificaitons = followers.map((follower) => ({
+      userId: follower.byUserId,
+      type: 'post',
+      message: `${requestedUser.email} just snapped: ${content}`,
+      resourceId: createdPost._id,
+    }));
+    if (newNotificaitons.length) {
+      await Notification.create(newNotificaitons, {session});
+    }
+
+    await session.commitTransaction();
     return res.status(201).json({
       status: 201,
       data: createdPost,
@@ -264,10 +293,11 @@ export const deletePost = async (req: Request, res: IAuthResponse) => {
   session.startTransaction();
   try {
     const postId = req?.params?.id;
+    const userId = res.userId;
 
     await Post
         .findOneAndDelete(
-            {_id: postId},
+            {_id: postId, authorId: userId},
             {session});
 
     await session.commitTransaction();

@@ -1,6 +1,12 @@
-import {Schema, model, ClientSession} from 'mongoose';
+import {
+  Schema,
+  model,
+  ClientSession,
+  PaginateModel,
+} from 'mongoose';
 import IFollowing from './types/following';
 import mongoosePaginate from 'mongoose-paginate-v2';
+import IUser from './types/user';
 
 const FollowingSchema = new Schema<IFollowing>({
   user: {
@@ -11,16 +17,20 @@ const FollowingSchema = new Schema<IFollowing>({
   byUserId: {
     type: String,
     required: true,
+    index: true,
   },
 }, {timestamps: true});
 
 FollowingSchema.plugin(mongoosePaginate);
 
-exports.Following = model<IFollowing>('following', FollowingSchema);
+const Following = model<IFollowing, PaginateModel<IFollowing>>(
+    'following',
+    FollowingSchema,
+);
 
-exports.getFollowers = async (query, page = 1, limit = 10) => {
+export const getFollowers = async (query, page = 1, limit = 10) => {
   try {
-    return await exports.Following.paginate(query, {
+    return await Following.paginate(query, {
       sort: '-createdAt',
       page,
       limit,
@@ -32,18 +42,23 @@ exports.getFollowers = async (query, page = 1, limit = 10) => {
   }
 };
 
-exports.create = async (
-    byUserId: string, user: string, session : ClientSession | undefined) => {
+export const create = async (
+    byUserId: string,
+    user: string | IUser,
+    session : ClientSession | undefined,
+) => {
   try {
     const newFollowingBody = {
       byUserId,
       user,
     };
 
-    return await exports.Following
+    return await Following
         .create([newFollowingBody], {session: session});
   } catch (err) {
     console.log(err);
     throw Error('Error while following this User');
   }
 };
+
+export default Following;

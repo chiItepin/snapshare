@@ -1,20 +1,13 @@
 import {Request} from 'express';
 import {startSession} from 'mongoose';
+import {handleUserNotFound} from '../helpers';
 import {IAuthResponse} from '../../middleware/auth';
-import IFollowing from '../../models/types/following';
-const Following = require('../../models/following');
+import Following, {create, getFollowers} from '../../models/following';
 const User = require('../../models/user');
 
-const handleUserNotFound = (res: IAuthResponse) => {
-  return res.status(404).json({
-    status: 404,
-    message: 'user requested is not found',
-  });
-};
-
 exports.listFollowers = async function(req: Request, res: IAuthResponse) {
-  const page = req?.query?.page || 1;
-  const limit = req?.query?.limit || 20;
+  const page = req?.query?.page ? Number(req?.query?.page) : 1;
+  const limit = req?.query?.limit ? Number(req?.query?.limit) : 20;
   const byUserId = req?.params?.id;
 
   try {
@@ -24,7 +17,9 @@ exports.listFollowers = async function(req: Request, res: IAuthResponse) {
       handleUserNotFound(res);
     }
 
-    const followers = await Following.getFollowers({}, page, limit);
+    const followers = await getFollowers({
+      byUserId,
+    }, page, limit);
 
     return res.status(200).json({
       status: 200,
@@ -43,7 +38,8 @@ exports.createFollower = async function(req: Request, res: IAuthResponse) {
   const session = await startSession();
   session.startTransaction();
   try {
-    const {byUserId, user}: IFollowing = req?.body;
+    const byUserId = res.userId;
+    const {user} = req?.body;
 
     if (!byUserId || !user || (user === byUserId)) {
       return res.status(400).json({
@@ -58,15 +54,15 @@ exports.createFollower = async function(req: Request, res: IAuthResponse) {
       handleUserNotFound(res);
     }
 
-    const existingFollower = await Following.Following
+    const existingFollower = await Following
         .find({byUserId, user}).exec();
     if (existingFollower && existingFollower?.length) {
-      await Following.Following
+      await Following
           .findOneAndDelete(
               {byUserId, user},
               {session});
     } else {
-      await Following.create(byUserId, user, session);
+      await create(byUserId, user, session);
     }
 
     await session.commitTransaction();
