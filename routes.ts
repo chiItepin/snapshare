@@ -24,15 +24,15 @@ const router = Router();
 
 // Users
 router.get('/users', authMiddleware, userController.getUsers);
-router.get('/users/:id/posts', authMiddleware, userController.getUserPosts);
-router.get('/users/:id', authMiddleware, userController.getUser);
+router.get('/users/:id/posts', userController.getUserPosts);
+router.get('/users/:id', userController.getUser);
 router.patch('/users/:id', authMiddleware, userController.updateUserImage);
 router.post('/users/login', userController.logIn);
 router.post('/users/create', userController.create);
 
 // Posts
 router.get('/posts', authMiddleware, handleListPosts);
-router.get('/posts/:id', authMiddleware, getSinglePost);
+router.get('/posts/:id', getSinglePost);
 router.post('/posts', authMiddleware, createPost);
 router.put('/posts/:id', authMiddleware, updatePost);
 router.patch('/posts/:id/like', authMiddleware, updatePostLike);
@@ -46,7 +46,7 @@ router.post('/posts/:id/comments',
 
 // Followers
 router.post('/followers', authMiddleware, followingController.createFollower);
-router.get('/followers/:id', authMiddleware, followingController.listFollowers);
+router.get('/followers/:id', followingController.listFollowers);
 
 // Notifications
 router.get('/notifications',
